@@ -24,7 +24,7 @@ function buildArticle(config: Partial<Record<string, string>>) {
   });
   try {
     expect(result.status, `${result.stdout}\n${result.stderr}`).toBe(0);
-    return readFileSync(join(output, 'posts', 'data-engineering-and-ai', 'index.html'), 'utf8');
+    return readFileSync(join(output, 'posts', 'first-oasis', 'index.html'), 'utf8');
   } finally {
     rmSync(output, { recursive: true, force: true });
   }

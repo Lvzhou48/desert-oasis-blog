@@ -11,7 +11,6 @@ const releaseRoutes = [
   '/articles/',
   '/categories/',
   '/about/',
-  '/posts/data-engineering-and-ai/',
   '/posts/first-oasis/',
 ];
 
@@ -150,9 +149,8 @@ test('same-page search navigation focuses on every desktop and mobile activation
 
 test('articles can be searched and reset', async ({ page }) => {
   await page.goto(sitePath('/articles/'));
-  await page.getByRole('searchbox', { name: '搜索文章' }).fill('智能系统');
-  await expect(page.getByRole('link', { name: /从数据仓库到智能系统/ })).toBeVisible();
-  await expect(page.getByRole('link', { name: /绿洲的第一粒种子/ })).toBeHidden();
+  await page.getByRole('searchbox', { name: '搜索文章' }).fill('公开角落');
+  await expect(page.getByRole('link', { name: /绿洲的第一粒种子/ })).toBeVisible();
   await page.getByRole('button', { name: '清除筛选' }).click();
   await expect(page.getByRole('link', { name: /绿洲的第一粒种子/ })).toBeVisible();
 });
@@ -161,45 +159,35 @@ test('article search includes category names', async ({ page }) => {
   await page.goto(sitePath('/articles/'));
   await page.getByRole('searchbox', { name: '搜索文章' }).fill('随想');
   await expect(page.getByRole('link', { name: /绿洲的第一粒种子/ })).toBeVisible();
-  await expect(page.getByRole('link', { name: /从数据仓库到智能系统/ })).toBeHidden();
-});
-
-test('article tag filtering preserves tags that contain a pipe character', async ({ page }) => {
-  await page.goto(sitePath('/articles/'));
-  await page.getByLabel('标签').selectOption('数据|AI');
-
-  await expect(page.getByRole('link', { name: /从数据仓库到智能系统/ })).toBeVisible();
-  await expect(page.getByRole('link', { name: /绿洲的第一粒种子/ })).toBeHidden();
 });
 
 test('article card headings follow their surrounding page hierarchy', async ({ page }) => {
   await page.goto(sitePath('/'));
   const latest = page.locator('#latest-writing');
   await expect(latest.getByRole('heading', { level: 2, name: '最新文章' })).toBeVisible();
-  await expect(latest.locator('article').getByRole('heading', { level: 3 })).toHaveCount(2);
+  await expect(latest.locator('article').getByRole('heading', { level: 3 })).toHaveCount(1);
   await expect(latest.locator('article').getByRole('heading', { level: 2 })).toHaveCount(0);
 
   await page.goto(sitePath('/articles/'));
   const collection = page.locator('.article-collection');
-  await expect(collection.getByRole('heading', { level: 2 })).toHaveCount(2);
+  await expect(collection.getByRole('heading', { level: 2 })).toHaveCount(1);
   await expect(collection.getByRole('heading', { level: 3 })).toHaveCount(0);
 
-  await page.goto(sitePath('/categories/数据工程和%20AI/'));
+  await page.goto(sitePath('/categories/随想/'));
   const categoryCollection = page.locator('.article-collection');
   await expect(categoryCollection.getByRole('heading', { level: 2 })).toHaveCount(1);
   await expect(categoryCollection.getByRole('heading', { level: 3 })).toHaveCount(0);
 });
 
 test('category pages only show matching posts', async ({ page }) => {
-  await page.goto(sitePath('/categories/数据工程和%20AI/'));
-  await expect(page.getByRole('link', { name: /从数据仓库到智能系统/ })).toBeVisible();
-  await expect(page.getByRole('link', { name: /绿洲的第一粒种子/ })).toHaveCount(0);
+  await page.goto(sitePath('/categories/随想/'));
+  await expect(page.getByRole('link', { name: /绿洲的第一粒种子/ })).toBeVisible();
 });
 
 test('article detail includes metadata, navigation and readable fallback comments', async ({ page }) => {
-  await page.goto(sitePath('/posts/data-engineering-and-ai/'));
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('从数据仓库到智能系统');
-  await expect(page.getByText('数据工程和 AI')).toBeVisible();
+  await page.goto(sitePath('/posts/first-oasis/'));
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('绿洲的第一粒种子');
+  await expect(page.getByText('随想')).toBeVisible();
   await expect(page.getByRole('navigation', { name: '相邻文章' })).toBeVisible();
   await expect(page.getByText('评论将在 GitHub Discussions 配置后开放。')).toBeVisible();
   const discussions = page.getByRole('link', { name: '前往 Discussions' });
@@ -272,8 +260,10 @@ for (const viewport of [
 test('RSS contains public posts and excludes drafts', async ({ request }) => {
   const response = await request.get(sitePath('/rss.xml'));
   const xml = await response.text();
-  expect(xml).toContain('从数据仓库到智能系统');
+  expect(xml).toContain('绿洲的第一粒种子');
+  expect(xml).not.toContain('从数据仓库到智能系统');
   expect(xml).not.toContain('草稿');
   expect(xml).toContain(`<link>https://lvzhou48.github.io${sitePath('/')}</link>`);
-  expect(xml).toContain(`https://lvzhou48.github.io${sitePath('/posts/data-engineering-and-ai/')}`);
+  expect(xml).toContain(`https://lvzhou48.github.io${sitePath('/posts/first-oasis/')}`);
+  expect(xml).not.toContain(`https://lvzhou48.github.io${sitePath('/posts/data-engineering-and-ai/')}`);
 });
