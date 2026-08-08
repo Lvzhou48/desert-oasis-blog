@@ -9,6 +9,18 @@ describe('E2E lifecycle options', () => {
     });
   });
 
+  it('passes only an explicit isolated content directory to the Playwright child', () => {
+    expect(
+      lifecycleEnvironment(
+        ['--base', '/desert-oasis-blog/', '--content-dir', 'tests/fixtures/content-independent-empty'],
+        { BLOG_CONTENT_DIR: 'stale-directory' },
+      ),
+    ).toEqual({
+      BASE_PATH: '/desert-oasis-blog/',
+      BLOG_CONTENT_DIR: 'tests/fixtures/content-independent-empty',
+    });
+  });
+
   it('keeps the root path deterministic when no base argument is supplied', () => {
     expect(lifecycleEnvironment([], { BASE_PATH: '/stale/' })).toEqual({
       BASE_PATH: '/',

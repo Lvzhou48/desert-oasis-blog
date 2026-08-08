@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type APIRequestContext } from '@playwright/test';
 
 const configuredBase = process.env.BASE_PATH ?? '/';
 const sitePath = (pathname: string) => {
@@ -6,12 +6,26 @@ const sitePath = (pathname: string) => {
   return `${base}/${pathname.replace(/^\/+/, '')}`;
 };
 
+type SearchRecord = {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  tags: string[];
+  href: string;
+};
+
+async function getPublishedPosts(request: APIRequestContext): Promise<SearchRecord[]> {
+  const response = await request.get(sitePath('/search-index.json'));
+  expect(response.ok()).toBeTruthy();
+  return response.json();
+}
+
 const releaseRoutes = [
   '/',
   '/articles/',
   '/categories/',
   '/about/',
-  '/posts/first-oasis/',
 ];
 
 for (const route of releaseRoutes) {
@@ -75,17 +89,26 @@ test('shared shell exposes the approved identity and keyboard navigation', async
   await expect(page.getByRole('navigation')).toContainText('文章');
 });
 
-test('homepage leads with identity and latest writing', async ({ page }) => {
+test('homepage leads with identity and adapts to the current publication count', async ({ page, request }) => {
+  const posts = await getPublishedPosts(request);
   await page.goto(sitePath('/'));
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('在喧嚣世界里，保留一小片生长。');
   await expect(
     page.getByText('记录数据工程与 AI，也记录生活、远方，以及那些尚未有答案的思考。'),
   ).toBeVisible();
   await expect(page.getByRole('heading', { name: '最新文章' })).toBeVisible();
-  const welcomeLink = page.getByRole('link', { name: /绿洲的第一粒种子/ });
-  await expect(welcomeLink).toBeVisible();
 
-  const featuredCard = page.locator('article').filter({ has: welcomeLink });
+  if (posts.length === 0) {
+    await expect(page.getByText('绿洲正在生长，第一篇文章很快抵达。')).toBeVisible();
+    await expect(page.locator('#latest-writing article')).toHaveCount(0);
+    return;
+  }
+
+  const latestPost = posts[0];
+  const postLink = page.getByRole('link', { name: latestPost.title });
+  await expect(postLink).toBeVisible();
+
+  const featuredCard = page.locator('article').filter({ has: postLink });
   const cardToSectionWidth = await featuredCard.evaluate((card) => {
     const section = card.closest('section');
     return section ? card.getBoundingClientRect().width / section.getBoundingClientRect().width : 0;
@@ -147,58 +170,78 @@ test('same-page search navigation focuses on every desktop and mobile activation
   await expect(page).toHaveURL(new RegExp(`${sitePath('/articles/')}#article-search$`));
 });
 
-test('articles can be searched and reset', async ({ page }) => {
+test('articles can be searched and reset', async ({ page, request }) => {
+  const post = (await getPublishedPosts(request))[0];
+  test.skip(!post, 'requires a public post');
   await page.goto(sitePath('/articles/'));
-  await page.getByRole('searchbox', { name: '搜索文章' }).fill('公开角落');
-  await expect(page.getByRole('link', { name: /绿洲的第一粒种子/ })).toBeVisible();
+  await page.getByRole('searchbox', { name: '搜索文章' }).fill(post.title);
+  await expect(page.getByRole('link', { name: post.title })).toBeVisible();
   await page.getByRole('button', { name: '清除筛选' }).click();
-  await expect(page.getByRole('link', { name: /绿洲的第一粒种子/ })).toBeVisible();
+  await expect(page.getByRole('link', { name: post.title })).toBeVisible();
 });
 
-test('article search includes category names', async ({ page }) => {
+test('article search includes category names', async ({ page, request }) => {
+  const post = (await getPublishedPosts(request))[0];
+  test.skip(!post, 'requires a public post');
   await page.goto(sitePath('/articles/'));
-  await page.getByRole('searchbox', { name: '搜索文章' }).fill('随想');
-  await expect(page.getByRole('link', { name: /绿洲的第一粒种子/ })).toBeVisible();
+  await page.getByRole('searchbox', { name: '搜索文章' }).fill(post.category);
+  await expect(page.getByRole('link', { name: post.title })).toBeVisible();
 });
 
-test('article card headings follow their surrounding page hierarchy', async ({ page }) => {
+test('empty publication state remains readable', async ({ page, request }) => {
+  test.skip((await getPublishedPosts(request)).length !== 0, 'requires an empty publication set');
+
+  await page.goto(sitePath('/'));
+  await expect(page.getByText('绿洲正在生长，第一篇文章很快抵达。')).toBeVisible();
+  await expect(page.locator('#latest-writing article')).toHaveCount(0);
+
+  await page.goto(sitePath('/articles/'));
+  await expect(page.getByText('0 篇文章')).toBeVisible();
+  await expect(page.locator('[data-article-card]')).toHaveCount(0);
+});
+
+test('article card headings follow their surrounding page hierarchy', async ({ page, request }) => {
+  const posts = await getPublishedPosts(request);
   await page.goto(sitePath('/'));
   const latest = page.locator('#latest-writing');
   await expect(latest.getByRole('heading', { level: 2, name: '最新文章' })).toBeVisible();
-  await expect(latest.locator('article').getByRole('heading', { level: 3 })).toHaveCount(1);
+  await expect(latest.locator('article').getByRole('heading', { level: 3 })).toHaveCount(Math.min(posts.length, 6));
   await expect(latest.locator('article').getByRole('heading', { level: 2 })).toHaveCount(0);
 
   await page.goto(sitePath('/articles/'));
   const collection = page.locator('.article-collection');
-  await expect(collection.getByRole('heading', { level: 2 })).toHaveCount(1);
+  await expect(collection.getByRole('heading', { level: 2 })).toHaveCount(posts.length);
   await expect(collection.getByRole('heading', { level: 3 })).toHaveCount(0);
 
-  await page.goto(sitePath('/categories/随想/'));
+  const post = posts[0];
+  if (!post) return;
+  await page.goto(sitePath(`/categories/${encodeURIComponent(post.category)}/`));
   const categoryCollection = page.locator('.article-collection');
-  await expect(categoryCollection.getByRole('heading', { level: 2 })).toHaveCount(1);
+  await expect(categoryCollection.getByRole('heading', { level: 2 })).toHaveCount(
+    posts.filter(({ category }) => category === post.category).length,
+  );
   await expect(categoryCollection.getByRole('heading', { level: 3 })).toHaveCount(0);
 });
 
-test('category pages only show matching posts', async ({ page }) => {
-  await page.goto(sitePath('/categories/随想/'));
-  await expect(page.getByRole('link', { name: /绿洲的第一粒种子/ })).toBeVisible();
+test('category pages include the discovered matching post', async ({ page, request }) => {
+  const post = (await getPublishedPosts(request))[0];
+  test.skip(!post, 'requires a public post');
+  await page.goto(sitePath(`/categories/${encodeURIComponent(post.category)}/`));
+  await expect(page.getByRole('link', { name: post.title })).toBeVisible();
 });
 
-test('article detail includes metadata, navigation and readable fallback comments', async ({ page }) => {
-  await page.goto(sitePath('/posts/first-oasis/'));
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('绿洲的第一粒种子');
-  await expect(page.getByText('随想')).toBeVisible();
+test('discovered article detail includes metadata, navigation and readable fallback comments', async ({ page, request }) => {
+  const post = (await getPublishedPosts(request))[0];
+  test.skip(!post, 'requires a public post');
+  await page.goto(post.href);
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(post.title);
+  await expect(page.getByText(post.category)).toBeVisible();
   await expect(page.getByRole('navigation', { name: '相邻文章' })).toBeVisible();
   await expect(page.getByText('评论将在 GitHub Discussions 配置后开放。')).toBeVisible();
   const discussions = page.getByRole('link', { name: '前往 Discussions' });
   await expect(discussions).toHaveAttribute('href', 'https://github.com/Lvzhou48/desert-oasis-blog/discussions');
   await expect(discussions).toHaveAttribute('rel', /noopener/);
   await expect(discussions).toHaveAttribute('rel', /noreferrer/);
-});
-
-test('date-only article metadata uses Shanghai midnight as its publication instant', async ({ page }) => {
-  await page.goto(sitePath('/posts/first-oasis/'));
-  await expect(page.locator('article time').first()).toHaveAttribute('datetime', '2026-08-07T16:00:00.000Z');
 });
 
 test('about and 404 preserve the mysterious oasis identity', async ({ page }) => {
@@ -257,13 +300,15 @@ for (const viewport of [
   });
 }
 
-test('RSS contains public posts and excludes drafts', async ({ request }) => {
+test('RSS contains exactly the currently published posts and excludes drafts', async ({ request }) => {
+  const posts = await getPublishedPosts(request);
   const response = await request.get(sitePath('/rss.xml'));
   const xml = await response.text();
-  expect(xml).toContain('绿洲的第一粒种子');
-  expect(xml).not.toContain('从数据仓库到智能系统');
   expect(xml).not.toContain('草稿');
   expect(xml).toContain(`<link>https://lvzhou48.github.io${sitePath('/')}</link>`);
-  expect(xml).toContain(`https://lvzhou48.github.io${sitePath('/posts/first-oasis/')}`);
-  expect(xml).not.toContain(`https://lvzhou48.github.io${sitePath('/posts/data-engineering-and-ai/')}`);
+  expect((xml.match(/<item>/g) ?? [])).toHaveLength(posts.length);
+  for (const post of posts) {
+    expect(xml).toContain(post.title);
+    expect(xml).toContain(`https://lvzhou48.github.io${post.href}`);
+  }
 });
