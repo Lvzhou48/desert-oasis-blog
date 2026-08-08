@@ -3,6 +3,7 @@ import { z } from 'astro/zod';
 import { CATEGORIES } from './data/site';
 import { parseContentDate } from './lib/content-date';
 import { dateAwareGlob } from './lib/content-loader';
+import { resolvePostsDirectory } from './lib/content-source';
 
 const contentDate = z.unknown().transform((value, context) => {
   try {
@@ -17,7 +18,7 @@ const contentDate = z.unknown().transform((value, context) => {
 });
 
 const posts = defineCollection({
-  loader: dateAwareGlob({ pattern: '**/*.{md,mdx}', base: './src/content/posts' }),
+  loader: dateAwareGlob({ pattern: '**/*.{md,mdx}', base: resolvePostsDirectory() }),
   schema: ({ image }) => z.object({
     title: z.string().min(1),
     description: z.string().min(20).max(180),
