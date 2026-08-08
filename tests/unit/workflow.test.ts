@@ -26,6 +26,7 @@ describe('GitHub Pages workflow', () => {
       'npm run build:pages',
       'npm run check:links:pages',
       'npm run test:e2e:lifecycle:pages',
+      'npm run test:e2e:lifecycle:empty',
       'actions/upload-pages-artifact@v4',
     ];
     const indexes = orderedSteps.map((step) => buildSteps.indexOf(step));
@@ -74,7 +75,7 @@ describe('GitHub Pages workflow', () => {
 
   it('keeps local production verification aligned with the CI gate order', () => {
     expect(packageJson.scripts.verify).toBe(
-      'npm run check && npm run check:public && npm test && npm run build:pages && npm run check:links:pages && npm run test:e2e:lifecycle:pages',
+      'npm run check && npm run check:public && npm test && npm run build:pages && npm run check:links:pages && npm run test:e2e:lifecycle:pages && npm run test:e2e:lifecycle:empty',
     );
   });
 });

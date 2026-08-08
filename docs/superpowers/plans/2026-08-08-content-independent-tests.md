@@ -24,7 +24,7 @@
 - Modify: `src/content.config.ts:1-32`
 - Create: `src/lib/content-source.ts`
 - Create: `tests/fixtures/content-independent/sample.md`
-- Create: `tests/fixtures/content-independent-empty/.gitkeep`
+- Create: `tests/fixtures/content-independent-empty/draft.md`
 - Test: `tests/unit/content-source.test.ts`
 
 **Interfaces:**
@@ -72,7 +72,7 @@ import { resolvePostsDirectory } from './lib/content-source';
 loader: dateAwareGlob({ pattern: '**/*.{md,mdx}', base: resolvePostsDirectory() }),
 ```
 
-Create `tests/fixtures/content-independent/sample.md` exactly as follows, then create the empty fixture directory with `.gitkeep`.
+Create `tests/fixtures/content-independent/sample.md` exactly as follows. Then add the following private-to-tests draft under `tests/fixtures/content-independent-empty/draft.md`: it gives Astro a real content file to load while `draft: true` keeps the public article collection empty. This avoids treating an empty filesystem glob as a valid zero-article test.
 
 ```md
 ---
@@ -88,6 +88,20 @@ draft: false
 自动化测试不应依赖作者实际发布的任何文章。
 ```
 
+```md
+---
+title: 未公开测试草稿
+description: 这篇测试草稿只用于让空公开文章夹具稳定刷新内容集合，不会进入公开网站。
+publishedAt: 2026-08-08
+category: 随想
+tags:
+  - 测试
+draft: true
+---
+
+这不是公开文章。
+```
+
 - [ ] **Step 4: 运行目录选择测试并构建夹具**
 
 Run: `npx vitest run tests/unit/content-source.test.ts`
@@ -101,7 +115,7 @@ Expected: PASS，产物含 `/posts/sample/`，默认公开文章不出现在该�
 - [ ] **Step 5: 提交 Task 1**
 
 ```bash
-git add src/content.config.ts src/lib/content-source.ts tests/fixtures/content-independent/sample.md tests/fixtures/content-independent-empty/.gitkeep tests/unit/content-source.test.ts
+git add src/content.config.ts src/lib/content-source.ts tests/fixtures/content-independent/sample.md tests/fixtures/content-independent-empty/draft.md tests/unit/content-source.test.ts
 git commit -m "test: isolate post content fixtures"
 ```
 

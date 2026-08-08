@@ -9,7 +9,7 @@
     "dev": "astro dev",
     "check": "astro check",
     "check:public": "node scripts/check-public-content.mjs",
-    "verify": "npm run check && npm run check:public && npm test && npm run build:pages && npm run check:links:pages && npm run test:e2e:lifecycle:pages",
+    "verify": "npm run check && npm run check:public && npm test && npm run build:pages && npm run check:links:pages && npm run test:e2e:lifecycle:pages && npm run test:e2e:lifecycle:empty",
     "test": "vitest run",
     "test:e2e": "playwright test",
     "test:e2e:lifecycle": "node scripts/check-e2e-lifecycle.mjs",
