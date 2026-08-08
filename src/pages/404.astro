@@ -1,0 +1,104 @@
+---
+import OasisMark from '../components/OasisMark.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { withBase } from '../lib/urls';
+---
+
+<BaseLayout title="迷失在沙漠里" description="这条路暂时没有通向绿洲。">
+  <section class="not-found">
+    <div class="not-found__mark">
+      <OasisMark decorative={false} label="远处的绿洲" />
+    </div>
+    <p class="not-found__code">404 · LOST IN THE DUNES</p>
+    <h1>你似乎迷失在沙漠里</h1>
+    <p>风沙盖住了这条路的痕迹。不妨回到绿洲，或从文章里寻找另一条路径。</p>
+    <nav aria-label="迷路后的去处">
+      <a class="not-found__primary" href={withBase('/')}>返回绿洲</a>
+      <a href={withBase('/articles/')}>浏览文章</a>
+    </nav>
+  </section>
+</BaseLayout>
+
+<style>
+  .not-found {
+    display: flex;
+    min-height: calc(100vh - 13rem);
+    padding-block: clamp(4rem, 10vw, 8rem);
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .not-found__mark {
+    width: min(13rem, 48vw);
+    margin-block-end: 1.5rem;
+    opacity: 0.72;
+  }
+
+  .not-found__mark :global(svg) {
+    width: 100%;
+    height: auto;
+  }
+
+  .not-found__code {
+    margin: 0;
+    color: var(--forest);
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+  }
+
+  .not-found h1 {
+    max-width: 18ch;
+    margin-block: 1rem;
+    font-size: clamp(2.4rem, 8vw, 5rem);
+  }
+
+  .not-found > p:not(.not-found__code) {
+    max-width: 34rem;
+    margin: 0;
+    color: var(--muted);
+    font-family: var(--font-serif);
+  }
+
+  .not-found nav {
+    display: flex;
+    margin-block-start: 2rem;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem 1.5rem;
+  }
+
+  .not-found nav a {
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .not-found__primary {
+    padding: 0.7rem 1.15rem;
+    border-radius: 999px;
+    background: var(--forest-deep);
+    color: var(--paper);
+  }
+
+  @media (max-width: 30rem) {
+    .not-found {
+      padding-block: 2rem;
+    }
+
+    .not-found__mark {
+      width: min(9rem, 42vw);
+      margin-block-end: 1rem;
+    }
+
+    .not-found h1 {
+      font-size: clamp(2.15rem, 11vw, 3.25rem);
+    }
+
+    .not-found nav {
+      margin-block-start: 1.35rem;
+    }
+  }
+</style>

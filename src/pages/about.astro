@@ -1,0 +1,137 @@
+---
+import OasisMark from '../components/OasisMark.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { CATEGORIES } from '../data/site';
+---
+
+<BaseLayout title="关于" description="关于沙漠里的绿洲，以及这里持续生长的文字。">
+  <section class="about-page">
+    <div class="about-page__copy">
+      <p class="about-page__eyebrow">ABOUT · 绿洲的来处</p>
+      <h1>关于这片绿洲</h1>
+      <p class="about-page__lead">
+        沙漠并不只是荒芜，也意味着辽阔、安静与等待。在信息不断涌来的世界里，这里想保留一小片可以慢下来、认真生长的地方。
+      </p>
+    </div>
+    <div class="about-page__mark">
+      <OasisMark decorative={false} />
+    </div>
+  </section>
+
+  <section class="about-section" aria-labelledby="writing-themes">
+    <p class="about-section__number" aria-hidden="true">01</p>
+    <div>
+      <h2 id="writing-themes">这里写些什么</h2>
+      <p>写技术如何落到真实问题，也写日常怎样塑造一个人；记录抵达过的远方，也收留那些暂时没有答案的念头。</p>
+      <ul class="theme-list">
+        {CATEGORIES.map((category) => <li>{category}</li>)}
+      </ul>
+    </div>
+  </section>
+
+  <section class="about-section" aria-labelledby="publishing-process">
+    <p class="about-section__number" aria-hidden="true">02</p>
+    <div>
+      <h2 id="publishing-process">文字如何抵达这里</h2>
+      <p>
+        每篇文章都从一段草稿、一个提纲或零散想法开始。它们会在协作中被梳理、补全和校对，直到意思足够清楚、表达仍然属于最初的思考，再由作者确认后公开。
+      </p>
+      <p>这是人的经历与判断，也是工具参与整理的过程。最终留下的，只应是值得分享的那一部分。</p>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .about-page {
+    position: relative;
+    display: grid;
+    overflow: clip;
+    min-height: 30rem;
+    padding-block: clamp(4rem, 10vw, 8rem);
+    align-items: center;
+    gap: 2rem;
+  }
+
+  .about-page__copy {
+    position: relative;
+    z-index: 1;
+  }
+
+  .about-page__eyebrow,
+  .about-section__number {
+    margin: 0;
+    color: var(--forest);
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+  }
+
+  .about-page h1 {
+    margin-block: 1rem 1.5rem;
+  }
+
+  .about-page__lead {
+    max-width: 38rem;
+    margin: 0;
+    color: var(--muted);
+    font-family: var(--font-serif);
+    font-size: clamp(1.08rem, 2.3vw, 1.4rem);
+  }
+
+  .about-page__mark {
+    position: absolute;
+    inset: 12% -5% auto auto;
+    width: min(44vw, 28rem);
+    opacity: 0.16;
+    transform: rotate(-3deg);
+    pointer-events: none;
+  }
+
+  .about-page__mark :global(svg) {
+    width: 100%;
+    height: auto;
+  }
+
+  .about-section {
+    display: grid;
+    padding-block: clamp(3rem, 8vw, 6rem);
+    border-top: 1px solid var(--border);
+    gap: 1.25rem;
+  }
+
+  .about-section h2 {
+    margin-block: 0 1.2rem;
+    font-size: clamp(1.8rem, 4vw, 3rem);
+  }
+
+  .about-section div > p {
+    max-width: 62ch;
+    color: var(--muted);
+  }
+
+  .theme-list {
+    display: grid;
+    margin: 2rem 0 0;
+    padding: 0;
+    gap: 0.75rem;
+    list-style: none;
+  }
+
+  .theme-list li {
+    padding: 0.9rem 1rem;
+    border-inline-start: 2px solid var(--earth-gold);
+    background: rgb(234 219 189 / 22%);
+    color: var(--forest-deep);
+    font-family: var(--font-serif);
+  }
+
+  @media (min-width: 48rem) {
+    .about-section {
+      grid-template-columns: 5rem minmax(0, 1fr);
+    }
+
+    .theme-list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>

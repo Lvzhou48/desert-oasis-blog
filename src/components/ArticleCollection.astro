@@ -1,0 +1,201 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import ArticleCard from './ArticleCard.astro';
+import { CATEGORIES } from '../data/site';
+import { withBase } from '../lib/urls';
+import { serializeTags } from '../lib/article-filters';
+
+interface Props {
+  posts: CollectionEntry<'posts'>[];
+  filters?: boolean;
+}
+
+const { posts, filters = false } = Astro.props;
+const normalize = (value: string) => value.trim().toLocaleLowerCase('zh-CN');
+const tags = [...new Set(posts.flatMap((post) => post.data.tags))].toSorted((a, b) =>
+  a.localeCompare(b, 'zh-CN'),
+);
+---
+
+{
+  filters && (
+    <form
+      id="article-search"
+      class="article-filters"
+      method="get"
+      action={withBase('/articles/')}
+      tabindex="-1"
+      data-article-filters
+    >
+      <label class="article-filters__search">
+        <span>搜索文章</span>
+        <input type="search" aria-label="搜索文章" name="q" placeholder="标题、摘要、分类或标签" />
+      </label>
+      <label>
+        <span>分类</span>
+        <select name="category">
+          <option value="">全部分类</option>
+          {CATEGORIES.map((category) => <option value={category}>{category}</option>)}
+        </select>
+      </label>
+      <label>
+        <span>标签</span>
+        <select name="tag">
+          <option value="">全部标签</option>
+          {tags.map((tag) => <option value={tag}>{tag}</option>)}
+        </select>
+      </label>
+      <button type="button" data-clear-filters>清除筛选</button>
+    </form>
+  )
+}
+
+<p class="article-collection__count" aria-live="polite" data-result-count>{posts.length} 篇文章</p>
+<div class="article-collection">
+  {
+    posts.map((post) => (
+      <div
+        data-article-card
+        data-title={normalize(post.data.title)}
+        data-description={normalize(post.data.description)}
+        data-category={normalize(post.data.category)}
+        data-tags={serializeTags(post.data.tags)}
+      >
+        <ArticleCard post={post} headingLevel={2} />
+      </div>
+    ))
+  }
+</div>
+{posts.length === 0 && <p>这个分类还没有公开文章，欢迎稍后再来。</p>}
+
+<script>
+  import { deserializeTags } from '../lib/article-filters';
+
+  const form = document.querySelector<HTMLFormElement>('[data-article-filters]');
+
+  if (form) {
+    const cards = [...document.querySelectorAll<HTMLElement>('[data-article-card]')];
+    const count = document.querySelector<HTMLElement>('[data-result-count]');
+    const clearButton = form.querySelector<HTMLButtonElement>('[data-clear-filters]');
+    const normalize = (value: string) => value.trim().toLocaleLowerCase('zh-CN');
+
+    function applyFilters() {
+      const data = new FormData(form!);
+      const query = normalize(String(data.get('q') ?? ''));
+      const category = normalize(String(data.get('category') ?? ''));
+      const tag = normalize(String(data.get('tag') ?? ''));
+      let visible = 0;
+      for (const card of cards) {
+        const haystack = normalize(
+          `${card.dataset.title} ${card.dataset.description} ${card.dataset.category} ${card.dataset.tags}`,
+        );
+        const cardTags = deserializeTags(String(card.dataset.tags ?? ''));
+        const matches =
+          (!query || haystack.includes(query)) &&
+          (!category || card.dataset.category === category) &&
+          (!tag || cardTags.includes(tag));
+        card.hidden = !matches;
+        if (matches) visible += 1;
+      }
+      if (count) count.textContent = `${visible} 篇文章`;
+    }
+
+    const params = new URLSearchParams(location.search);
+    for (const name of ['q', 'category', 'tag']) {
+      const control = form.elements.namedItem(name);
+      const value = params.get(name);
+      if (value !== null && control instanceof HTMLInputElement) control.value = value;
+      if (value !== null && control instanceof HTMLSelectElement) control.value = value;
+    }
+
+    form.addEventListener('input', applyFilters);
+    form.addEventListener('change', applyFilters);
+    clearButton?.addEventListener('click', () => {
+      form.reset();
+      history.replaceState({}, '', location.pathname);
+      applyFilters();
+    });
+    const focusSearchFromHash = () => {
+      if (location.hash === '#article-search') {
+        form.querySelector<HTMLInputElement>('input[type="search"]')?.focus();
+      }
+    };
+    window.addEventListener('load', focusSearchFromHash, { once: true });
+    for (const link of document.querySelectorAll<HTMLAnchorElement>('a[href$="#article-search"]')) {
+      const target = new URL(link.href);
+      if (target.pathname !== location.pathname) continue;
+      link.addEventListener('click', () => requestAnimationFrame(focusSearchFromHash));
+    }
+    applyFilters();
+  }
+</script>
+
+<style>
+  .article-filters {
+    display: grid;
+    padding: 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: 1.25rem;
+    background: rgb(246 240 228 / 68%);
+    gap: 1rem;
+    scroll-margin-top: 2rem;
+  }
+
+  .article-filters label {
+    display: grid;
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-weight: 700;
+    gap: 0.4rem;
+  }
+
+  .article-filters input,
+  .article-filters select,
+  .article-filters button {
+    min-height: 2.9rem;
+    padding: 0.65rem 0.8rem;
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    background: var(--paper);
+    color: var(--ink);
+    font: inherit;
+  }
+
+  .article-filters button {
+    align-self: end;
+    border-color: var(--forest);
+    color: var(--forest-deep);
+    cursor: pointer;
+    font-weight: 700;
+  }
+
+  .article-collection__count {
+    margin-block: 1.5rem 1rem;
+    color: var(--muted);
+  }
+
+  .article-collection {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  [data-article-card][hidden] {
+    display: none;
+  }
+
+  @media (min-width: 48rem) {
+    .article-filters {
+      grid-template-columns: minmax(14rem, 2fr) repeat(2, minmax(10rem, 1fr)) auto;
+    }
+
+    .article-collection {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 72rem) {
+    .article-collection {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+</style>

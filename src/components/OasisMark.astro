@@ -1,0 +1,29 @@
+---
+interface Props {
+  decorative?: boolean;
+  label?: string;
+  class?: string;
+}
+
+const {
+  decorative = true,
+  label = '沙丘、太阳、水域与植被组成的抽象绿洲',
+  class: className,
+} = Astro.props;
+---
+
+<svg
+  class={className}
+  viewBox="0 0 96 72"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+  aria-hidden={decorative ? 'true' : undefined}
+  role={decorative ? undefined : 'img'}
+  aria-label={decorative ? undefined : label}
+>
+  <circle cx="71" cy="17" r="9" fill="var(--earth-gold)" />
+  <path d="M5 55c16-20 32-25 48-14 12 8 24 9 38 1v19H5V55Z" fill="var(--sand)" />
+  <path d="M14 61c15-12 30-14 45-7 10 5 20 4 32-2v9H14Z" fill="var(--forest)" />
+  <path d="M45 54c1-17 5-29 13-36-1 15-5 27-10 36h-3Z" fill="var(--forest-deep)" />
+  <path d="M49 36c-9-4-14-10-15-18 10 2 17 8 19 16l-4 2Zm7-7c2-10 8-17 19-21-2 10-8 17-19 21Z" fill="var(--forest)" />
+</svg>

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="沙漠里的绿洲">
+  <rect width="64" height="64" rx="14" fill="#f6f0e4"/>
+  <circle cx="45" cy="18" r="8" fill="#a98247"/>
+  <path d="M6 43c11-13 21-16 31-10 7 4 14 5 21 1v18H6Z" fill="#eadbbd"/>
+  <path d="M12 48c10-8 20-10 30-6 5 2 10 2 16 0v10H12Z" fill="#496f55"/>
+  <path d="M29 44c1-11 4-18 9-22-1 10-3 17-6 22Z" fill="#173b31"/>
+  <path d="M31 32c-6-3-9-7-9-12 7 2 11 6 12 11Zm4-4c1-7 5-12 12-15-1 7-5 12-12 15Z" fill="#496f55"/>
+</svg>

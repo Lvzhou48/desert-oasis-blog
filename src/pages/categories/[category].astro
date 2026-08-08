@@ -1,0 +1,44 @@
+---
+import { getCollection } from 'astro:content';
+import ArticleCollection from '../../components/ArticleCollection.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { CATEGORIES, type Category } from '../../data/site';
+import { getPostsByCategory, getPublishedPosts } from '../../lib/posts';
+import { withBase } from '../../lib/urls';
+
+export function getStaticPaths() {
+  return CATEGORIES.map((category) => ({ params: { category }, props: { category } }));
+}
+
+interface Props {
+  category: Category;
+}
+
+const { category } = Astro.props;
+const publicPosts = getPublishedPosts(await getCollection('posts'));
+const posts = getPostsByCategory(publicPosts, category);
+---
+
+<BaseLayout title={category} description={`浏览“${category}”分类下的公开文章。`}>
+  <header class="page-heading">
+    <a href={withBase('/categories/')}>← 返回全部分类</a>
+    <h1>{category}</h1>
+    <p>这个方向共有 {posts.length} 篇公开文章。</p>
+  </header>
+  <ArticleCollection posts={posts} />
+</BaseLayout>
+
+<style>
+  .page-heading {
+    padding-block: clamp(3rem, 8vw, 6rem) 2.5rem;
+  }
+
+  .page-heading h1 {
+    margin-block: 1rem 0.6rem;
+  }
+
+  .page-heading p {
+    margin: 0;
+    color: var(--muted);
+  }
+</style>

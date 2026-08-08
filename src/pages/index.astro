@@ -1,0 +1,31 @@
+---
+import { getCollection } from 'astro:content';
+import ArticleCard from '../components/ArticleCard.astro';
+import Hero from '../components/Hero.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { siteConfig } from '../data/site';
+import { getPublishedPosts } from '../lib/posts';
+import { withBase } from '../lib/urls';
+
+const posts = getPublishedPosts(await getCollection('posts')).slice(0, 6);
+const [featured, ...morePosts] = posts;
+---
+
+<BaseLayout title={siteConfig.name} description={siteConfig.description}>
+  <Hero />
+  <section id="latest-writing" class="latest-writing" aria-labelledby="latest-title">
+    <div class="latest-writing__heading">
+      <p>FIELD NOTES · 近期记录</p>
+      <h2 id="latest-title">最新文章</h2>
+    </div>
+    {featured ? <ArticleCard post={featured} featured headingLevel={3} /> : <p>绿洲正在生长，第一篇文章很快抵达。</p>}
+    {
+      morePosts.length > 0 && (
+        <div class="latest-writing__grid">
+          {morePosts.map((post) => <ArticleCard post={post} headingLevel={3} />)}
+        </div>
+      )
+    }
+    <a class="latest-writing__all" href={withBase('/articles/')}>查看全部文章 <span aria-hidden="true">→</span></a>
+  </section>
+</BaseLayout>

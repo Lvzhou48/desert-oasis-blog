@@ -1,0 +1,63 @@
+---
+const FIXED_REPO = 'Lvzhou48/desert-oasis-blog';
+const DISCUSSIONS_URL = `https://github.com/${FIXED_REPO}/discussions`;
+const repo = import.meta.env.PUBLIC_GISCUS_REPO;
+const repoId = import.meta.env.PUBLIC_GISCUS_REPO_ID;
+const category = import.meta.env.PUBLIC_GISCUS_CATEGORY;
+const categoryId = import.meta.env.PUBLIC_GISCUS_CATEGORY_ID;
+const hasText = (value: unknown): value is string => typeof value === 'string' && value.trim().length > 0;
+const enabled = repo === FIXED_REPO && [repoId, category, categoryId].every(hasText);
+---
+
+<section aria-labelledby="comments-title" class="comments">
+  <h2 id="comments-title">留言</h2>
+  {
+    enabled && (
+      <script
+        is:inline
+        src="https://giscus.app/client.js"
+        data-repo={repo}
+        data-repo-id={repoId}
+        data-category={category}
+        data-category-id={categoryId}
+        data-mapping="pathname"
+        data-strict="1"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="noborder_light"
+        data-lang="zh-CN"
+        data-loading="lazy"
+        crossorigin="anonymous"
+        async
+      />
+    )
+  }
+  <p>
+    {enabled ? '如果评论未能加载，可前往 GitHub Discussions 参与讨论。' : '评论将在 GitHub Discussions 配置后开放。'}
+    <a href={DISCUSSIONS_URL} target="_blank" rel="noopener noreferrer">前往 Discussions</a>
+  </p>
+</section>
+
+<style>
+  .comments {
+    max-width: 70ch;
+    margin: clamp(3rem, 8vw, 6rem) auto 0;
+    padding-block: 2rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .comments h2 {
+    margin-block: 0 0.75rem;
+    font-size: clamp(1.75rem, 4vw, 2.4rem);
+  }
+
+  .comments p {
+    margin: 0;
+    color: var(--muted);
+  }
+
+  .comments a {
+    margin-inline-start: 0.65rem;
+  }
+</style>

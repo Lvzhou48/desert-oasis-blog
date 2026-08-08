@@ -1,0 +1,88 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { CATEGORIES } from '../../data/site';
+import { getPostsByCategory, getPublishedPosts } from '../../lib/posts';
+import { withBase } from '../../lib/urls';
+
+const publicPosts = getPublishedPosts(await getCollection('posts'));
+---
+
+<BaseLayout title="分类" description="按主题浏览沙漠里的绿洲公开文章。">
+  <header class="page-heading">
+    <p>PATHS · 生长方向</p>
+    <h1>分类</h1>
+    <p>四条路径，通向技术、生活、远方与思考。</p>
+  </header>
+  <div class="category-grid">
+    {
+      CATEGORIES.map((category) => {
+        const count = getPostsByCategory(publicPosts, category).length;
+        return (
+          <a class="category-card" href={withBase(`/categories/${encodeURIComponent(category)}/`)}>
+            <h2>{category}</h2>
+            <p>{count} 篇公开文章</p>
+            <span aria-hidden="true">探索 →</span>
+          </a>
+        );
+      })
+    }
+  </div>
+</BaseLayout>
+
+<style>
+  .page-heading {
+    padding-block: clamp(3rem, 8vw, 6rem) 2.5rem;
+  }
+
+  .page-heading h1 {
+    margin-block: 0.6rem;
+  }
+
+  .page-heading p {
+    margin: 0;
+    color: var(--muted);
+  }
+
+  .page-heading p:first-child {
+    color: var(--forest);
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+  }
+
+  .category-grid {
+    display: grid;
+    padding-block-end: clamp(4rem, 8vw, 7rem);
+    gap: 1.5rem;
+  }
+
+  .category-card {
+    display: block;
+    padding: clamp(1.5rem, 5vw, 2.5rem);
+    border: 1px solid var(--border);
+    border-radius: 1.25rem;
+    background: rgb(246 240 228 / 68%);
+    text-decoration: none;
+  }
+
+  .category-card h2,
+  .category-card p {
+    margin-block: 0 0.8rem;
+  }
+
+  .category-card p {
+    color: var(--muted);
+  }
+
+  .category-card span {
+    color: var(--forest);
+    font-weight: 700;
+  }
+
+  @media (min-width: 48rem) {
+    .category-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>

@@ -1,0 +1,13 @@
+---
+import { siteConfig } from '../data/site';
+import { getSiteYear } from '../lib/format';
+
+const year = getSiteYear();
+---
+
+<footer class="site-footer">
+  <div class="site-footer__inner site-shell">
+    <p>在喧嚣世界里，保留一小片生长。</p>
+    <p>&copy; {year} {siteConfig.name}</p>
+  </div>
+</footer>

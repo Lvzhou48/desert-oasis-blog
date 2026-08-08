@@ -1,0 +1,23 @@
+---
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import ArticleLayout from '../../layouts/ArticleLayout.astro';
+import { getAdjacentPosts, getPublishedPosts } from '../../lib/posts';
+
+export async function getStaticPaths() {
+  const posts = getPublishedPosts(await getCollection('posts'));
+  return posts.map((post) => ({ params: { id: post.id }, props: { post, posts } }));
+}
+
+interface Props {
+  post: CollectionEntry<'posts'>;
+  posts: CollectionEntry<'posts'>[];
+}
+
+const { post, posts } = Astro.props;
+const { Content, headings } = await render(post);
+const adjacent = getAdjacentPosts(posts, post.id);
+---
+
+<ArticleLayout post={post} headings={headings} adjacent={adjacent}>
+  <Content />
+</ArticleLayout>

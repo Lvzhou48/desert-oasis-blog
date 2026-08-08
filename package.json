@@ -1,0 +1,37 @@
+{
+  "name": "desert-oasis-blog",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "check": "astro check",
+    "check:public": "node scripts/check-public-content.mjs",
+    "verify": "npm run check && npm run check:public && npm test && npm run build:pages && npm run check:links:pages && npm run test:e2e:lifecycle:pages",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "test:e2e:lifecycle": "node scripts/check-e2e-lifecycle.mjs",
+    "test:e2e:lifecycle:pages": "node scripts/check-e2e-lifecycle.mjs --base /desert-oasis-blog/",
+    "build": "astro build --site https://lvzhou48.github.io --base /",
+    "build:pages": "astro build --site https://lvzhou48.github.io --base /desert-oasis-blog/",
+    "check:links": "node scripts/check-static-links.mjs --dist dist --base /",
+    "check:links:pages": "node scripts/check-static-links.mjs --dist dist --base /desert-oasis-blog/",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@astrojs/mdx": "7.0.5",
+    "@astrojs/rss": "^4.0.19",
+    "@astrojs/sitemap": "^3.7.3",
+    "astro": "^7.2.0",
+    "parse5": "7.3.0",
+    "typescript": "5.9.3",
+    "yaml": "2.9.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "vitest": "^4.1.10"
+  }
+}

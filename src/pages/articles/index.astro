@@ -1,0 +1,40 @@
+---
+import { getCollection } from 'astro:content';
+import ArticleCollection from '../../components/ArticleCollection.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getPublishedPosts } from '../../lib/posts';
+
+const posts = getPublishedPosts(await getCollection('posts'));
+---
+
+<BaseLayout title="文章" description="浏览沙漠里的绿洲全部公开文章，并按关键词、分类或标签筛选。">
+  <header class="page-heading">
+    <p>FIELD NOTES · 全部记录</p>
+    <h1>文章</h1>
+    <p>从数据工程与 AI，到生活、远方与尚未有答案的思考。</p>
+  </header>
+  <ArticleCollection posts={posts} filters />
+</BaseLayout>
+
+<style>
+  .page-heading {
+    padding-block: clamp(3rem, 8vw, 6rem) 2.5rem;
+  }
+
+  .page-heading h1 {
+    margin-block: 0.6rem;
+  }
+
+  .page-heading > p {
+    max-width: 42rem;
+    margin-block: 0;
+    color: var(--muted);
+  }
+
+  .page-heading > p:first-child {
+    color: var(--forest);
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+  }
+</style>

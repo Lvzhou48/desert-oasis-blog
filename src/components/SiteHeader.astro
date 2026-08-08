@@ -1,0 +1,64 @@
+---
+import { NAV_ITEMS, siteConfig } from '../data/site';
+import { withBase } from '../lib/urls';
+import OasisMark from './OasisMark.astro';
+
+const currentPath = Astro.url.pathname;
+---
+
+<header class="site-header">
+  <div class="site-header__inner site-shell">
+    <a class="site-brand" href={withBase('/')} aria-label={siteConfig.name}>
+      <OasisMark />
+      <span>{siteConfig.name}</span>
+    </a>
+    <button
+      class="menu-toggle"
+      type="button"
+      aria-expanded="false"
+      aria-controls="site-menu"
+      aria-label="打开导航"
+      data-menu-toggle
+    >菜单</button>
+    <nav id="site-menu" class="site-nav" aria-label="主导航" data-site-menu>
+      <ul>
+        {NAV_ITEMS.map((item) => {
+          const href = withBase(item.href);
+          return (
+            <li>
+              <a href={href} aria-current={currentPath === href ? 'page' : undefined}>
+                {item.label}
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<script>
+  const trigger = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+  const menu = document.querySelector<HTMLElement>('[data-site-menu]');
+
+  const setMenuOpen = (open: boolean) => {
+    if (!trigger || !menu) return;
+    trigger.setAttribute('aria-expanded', String(open));
+    trigger.setAttribute('aria-label', open ? '关闭导航' : '打开导航');
+    menu.toggleAttribute('data-open', open);
+  };
+
+  trigger?.addEventListener('click', () => {
+    setMenuOpen(trigger.getAttribute('aria-expanded') !== 'true');
+  });
+
+  menu?.addEventListener('click', (event) => {
+    if ((event.target as Element).closest('a')) setMenuOpen(false);
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape' || trigger?.getAttribute('aria-expanded') !== 'true') return;
+    setMenuOpen(false);
+    trigger.focus();
+  });
+</script>

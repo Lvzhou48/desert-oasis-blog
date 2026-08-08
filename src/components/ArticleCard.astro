@@ -1,0 +1,38 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import { estimateReadingMinutes, formatPublishedDate } from '../lib/format';
+import { withBase } from '../lib/urls';
+
+interface Props {
+  post: CollectionEntry<'posts'>;
+  featured?: boolean;
+  headingLevel?: 2 | 3;
+}
+
+const { post, featured = false, headingLevel = 3 } = Astro.props;
+const href = withBase(`/posts/${post.id}/`);
+const Heading = `h${headingLevel}` as 'h2' | 'h3';
+---
+
+<article class:list={['article-card', { 'article-card--featured': featured }]}>
+  <div class="article-card__visual">
+    {
+      post.data.cover ? (
+        <Image src={post.data.cover} alt={post.data.coverAlt!} widths={[480, 768, 1120]} sizes={featured ? '(min-width: 48rem) 45vw, 100vw' : '(min-width: 48rem) 30vw, 100vw'} />
+      ) : (
+        <div class="article-card__oasis" aria-hidden="true"></div>
+      )
+    }
+  </div>
+  <div class="article-card__body">
+    <p class="article-card__category">{post.data.category}</p>
+    <Heading><a href={href}>{post.data.title}</a></Heading>
+    <p class="article-card__summary">{post.data.description}</p>
+    <p class="article-card__meta">
+      <time datetime={post.data.publishedAt.toISOString()}>{formatPublishedDate(post.data.publishedAt)}</time>
+      <span aria-hidden="true">·</span>
+      <span>{estimateReadingMinutes(post.body ?? '')} 分钟阅读</span>
+    </p>
+  </div>
+</article>

@@ -1,0 +1,16 @@
+---
+import { siteConfig } from '../data/site';
+import OasisMark from './OasisMark.astro';
+---
+
+<section class="hero" aria-labelledby="hero-title">
+  <div class="hero__copy">
+    <p class="hero__eyebrow">DESERT · OASIS · NOTES</p>
+    <h1 id="hero-title">{siteConfig.tagline}</h1>
+    <p class="hero__description">{siteConfig.description}</p>
+    <a class="hero__link" href="#latest-writing">向下阅读 <span aria-hidden="true">↓</span></a>
+  </div>
+  <div class="hero__art" aria-hidden="true">
+    <OasisMark class="hero__mark" />
+  </div>
+</section>
