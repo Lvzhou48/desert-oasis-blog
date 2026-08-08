@@ -12,6 +12,7 @@ function buildArticle(config: Partial<Record<string, string>>) {
   const output = mkdtempSync(join(tmpdir(), 'oasis-comments-dist-'));
   const env = {
     ...process.env,
+    BLOG_CONTENT_DIR: resolve('tests/fixtures/content-independent'),
     PUBLIC_GISCUS_REPO: '',
     PUBLIC_GISCUS_REPO_ID: '',
     PUBLIC_GISCUS_CATEGORY: '',
@@ -24,7 +25,7 @@ function buildArticle(config: Partial<Record<string, string>>) {
   });
   try {
     expect(result.status, `${result.stdout}\n${result.stderr}`).toBe(0);
-    return readFileSync(join(output, 'posts', 'first-oasis', 'index.html'), 'utf8');
+    return readFileSync(join(output, 'posts', 'sample', 'index.html'), 'utf8');
   } finally {
     rmSync(output, { recursive: true, force: true });
   }
@@ -37,6 +38,10 @@ function expectSafeFallback(html: string) {
 }
 
 describe('giscus build-time enhancement', { sequential: true }, () => {
+  it('builds its comment target from the isolated fixture content', () => {
+    expect(buildArticle({})).toContain('独立测试文章');
+  });
+
   it.each([
     ['no configuration', {}],
     ['partial configuration', { PUBLIC_GISCUS_REPO: 'Lvzhou48/desert-oasis-blog' }],

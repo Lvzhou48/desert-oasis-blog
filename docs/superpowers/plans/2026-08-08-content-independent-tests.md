@@ -58,8 +58,12 @@ Expected: FAIL，提示无法解析 `src/lib/content-source`。
 
 ```ts
 // src/lib/content-source.ts
+import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
+
 export function resolvePostsDirectory(override = process.env.BLOG_CONTENT_DIR) {
-  return override?.trim() || './src/content/posts';
+  const directory = override?.trim();
+  return directory ? pathToFileURL(resolve(directory)).href : './src/content/posts';
 }
 
 // src/content.config.ts
